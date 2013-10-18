@@ -34,7 +34,6 @@ int output_to_file(int fp, char *filepath, int filesize, off_t offset) {
   printf("----------------\n");
   printf("output!\n");
   printf("----------------\n");
-  printf("\n");
 
   return (buf != NULL);
 }
@@ -55,7 +54,7 @@ void output_file_header(int fp, char *path, off_t offset) {
   lseek(fp, prev_offset, SEEK_SET);
 }
 
-int unpack(int fp, int only_header_flag) {
+int unpack(int fp, int output_flag) {
   int size;
   char *filepath;
   int unknown1, unknown2, unknown3;
@@ -87,10 +86,8 @@ int unpack(int fp, int only_header_flag) {
   printf("end: %d\n", end);
 
   result = 0;
-  if (only_header_flag == 0) {
+  if (output_flag != 0) {
     result = output_to_file(fp, filepath, end, start);
-  } else {
-    output_file_header(fp, filepath, start);
   }
 
   free(filepath);
@@ -98,33 +95,42 @@ int unpack(int fp, int only_header_flag) {
 }
 
 int unpack_file_header(int fp) {
-  return unpack(fp, 1);
+  return unpack(fp, 0);
 }
 
 int unpack_file(int fp) {
-  return unpack(fp, 0);
+  return unpack(fp, 1);
 }
 
 void unpacker(char *path) {
   int fp;
 
-  char header[4];
-  int version;
-  int start, end;
+  char prefix[4];
+  int header_start;
+  int header_end;
+  int unknown;
+
+  int current_offset;
 
   fp = open(path, O_RDONLY);
 
-  read(fp, &header, sizeof(header) - 1);
-  header[sizeof(header) - 1] = '\0';
-  printf("%s\n", header);
+  read(fp, &prefix, sizeof(prefix) - 1);
+  prefix[sizeof(prefix) - 1] = '\0';
+  printf("%s\n", prefix);
 
-  read(fp, &version, sizeof(version));
-  read(fp, &start, sizeof(start));
-  read(fp, &end, sizeof(end));
+  read(fp, &header_end, sizeof(header_end));
+  read(fp, &header_start, sizeof(header_start));
+  read(fp, &unknown, sizeof(unknown));
 
-  unpack_file(fp);
-  unpack_file(fp);
-  unpack_file(fp);
+  printf("header_end: %d\n", header_end);
+  printf("header_start: %d\n", header_start);
+  printf("unknown: %d\n", unknown);
+
+  while ((current_offset = lseek(fp, 0, SEEK_CUR)) < header_end) {
+    printf("\n");
+    printf("current_offset: %d\n", current_offset);
+    unpack_file(fp);
+  }
 
   close(fp);
 }
