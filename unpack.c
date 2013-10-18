@@ -38,22 +38,6 @@ int output_to_file(int fp, char *filepath, int filesize, off_t offset) {
   return (buf != NULL);
 }
 
-
-void output_file_header(int fp, char *path, off_t offset) {
-  off_t prev_offset;
-  char buf[10];
-
-  prev_offset = lseek(fp, 0, SEEK_CUR);
-  lseek(fp, offset, SEEK_SET);
-
-  read(fp, &buf, sizeof(buf) - 1);
-  buf[sizeof(buf) - 1] = '\0';
-  printf("buf: %s\n", buf);
-  printf("\n");
-
-  lseek(fp, prev_offset, SEEK_SET);
-}
-
 int unpack(int fp, int output_flag) {
   int size;
   char *filepath;
