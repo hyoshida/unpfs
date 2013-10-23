@@ -1,5 +1,5 @@
 CC = cc
-PROGRAM = unpack
+PROGRAM = unpfs
 
 $(PROGRAM): *.c
 	$(CC) $@.c -o $@
